@@ -1,0 +1,42 @@
+{
+  "name": "scilayer",
+  "version": "0.5.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env server.mjs",
+    "start": "node --env-file-if-exists=.env server.mjs --production",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "install:codex": "node scripts/install.mjs",
+    "doctor": "node scripts/doctor.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^2.0.3",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@napi-rs/canvas": "^1.0.11",
+    "ag-psd": "^31.0.3",
+    "express": "^5.1.0",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.468.0",
+    "pptxgenjs": "^4.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "sharp": "^0.35.5",
+    "vite": "^7.1.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  },
+  "description": "Scientific figures, generated with intent and rebuilt as editable layers in Codex.",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "author": "Suyang Yuan",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Su0tar/SciLayer.git"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
