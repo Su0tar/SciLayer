@@ -5,6 +5,12 @@
 !/AGENTS.md
 !/README.md
 !/README.en.md
+!/docs/
+/docs/*
+!/docs/screenshots/
+/docs/screenshots/*
+!/docs/screenshots/codex-layer-editing.png
+!/docs/screenshots/scientific-figure-layers.png
 !/LICENSE.md
 !/NOTICE
 !/THIRD_PARTY_NOTICES.md

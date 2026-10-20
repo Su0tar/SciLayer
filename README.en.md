@@ -10,6 +10,18 @@ Use an image generated in ChatGPT, Codex ImageGen or another tool, or supply an 
 
 > 0.5.0 · Codex first · Local service · Apache-2.0 · Commercial use allowed
 
+## See it in use
+
+**Turn a reference image into editable objects inside Codex.** Request conversion in the conversation, then select and edit individual text, frames and arrows in the right-side canvas before exporting.
+
+![SciLayer in the Codex side panel, with reconstructed diagram objects selected for editing](docs/screenshots/codex-layer-editing.png)
+
+**Work with complex scientific figures as separate layers.** Edit text and frames independently while keeping illustrations as individual image layers. The property panel offers text settings, common colors and colors sampled from the figure.
+
+![A complex scientific figure with an independent text object, text properties and a representative color palette](docs/screenshots/scientific-figure-layers.png)
+
+The second screenshot shows an earlier development UI with the former Figure Workbench name and demo shortcuts that have since been removed. The current product is SciLayer. These are documentation screenshots; they are not bundled canvas examples.
+
 ## From one image to editable layers
 
 | Source element | Independent layer | What you can edit |
