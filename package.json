@@ -29,8 +29,8 @@
   "devDependencies": {
     "@playwright/test": "^1.56.0"
   },
-  "description": "Scientific figures, generated with intent and rebuilt as editable layers in Codex.",
-  "license": "PolyForm-Noncommercial-1.0.0",
+  "description": "Turn ChatGPT / Codex ImageGen figures and other images into individually editable layers with a Codex skill and local MCP canvas.",
+  "license": "Apache-2.0",
   "author": "Suyang Yuan",
   "repository": {
     "type": "git",

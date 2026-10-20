@@ -1,12 +1,28 @@
 # SciLayer
 
-**从科研意图，到图像，再到可编辑图层。**
+[简体中文](README.md) | [English](README.en.md)
 
-SciLayer 是为 **Codex** 设计的科研绘图工作流：一个负责需求与提示词校准的 skill，加上本地画布和 MCP 编辑引擎。适合科研流程图、框图、机制图和结构图。
+**把 ChatGPT / Codex ImageGen 生成的图片，以及其他科研参考图，拆成一个个可独立编辑的图层元素。**
 
-先把科学结构说明白，再用 Codex 内置 imagegen 生成便于分层的图。图片满意后，由你决定开始可编辑化；文字、边框、箭头和简单图标成为独立对象，复杂插画保留为图片图层。可在 Codex 右侧拖动、改字、调色和导出。
+Turn ChatGPT / Codex ImageGen figures and other images into individually editable layers.
 
-> 0.5.0 · Codex 优先 · 本地服务 · 非商业用途许可，需保留署名
+SciLayer 是一个 **Codex Skill + 本地 MCP 图层编辑器**。把满意的图片交给 Codex，重建成可分别选取、拖动、修改和导出的文字、形状、箭头、图标及插画图层，在右侧画布继续编辑，并导出 PPTX、SVG、PNG、PSD 或 JSON。适合科研流程图、框图、机制图和结构图。
+
+既可以使用 ChatGPT、Codex ImageGen 或其他工具生成的图片，也可以导入已有论文图、截图等参考图。**无需先重新生图**。这里的“拆层”是由 Codex 理解画面后重建独立对象，复杂插画裁为图片图层；并非恢复原图隐藏的 PSD 图层，也不是把所有细节自动变成矢量。
+
+> 0.5.0 · Codex 优先 · 本地服务 · Apache-2.0 · 允许商业使用
+
+## 从一张图片到可编辑图层
+
+| 原图元素 | 转换后的独立图层 | 可以做什么 |
+| --- | --- | --- |
+| 文字与标注 | 原生文字对象 | 改字、字体、字号、颜色和位置 |
+| 边框与基础形状 | 原生形状或支持的矢量路径 | 改尺寸、描边、实线/虚线、渐变和圆角 |
+| 箭头与连线 | 独立连接对象或路径 | 移动端点、调整走向、线型与颜色 |
+| 简单图标 | 支持的语义模板与矢量路径 | 缩放、调色、修改线宽；需核对匹配结果 |
+| 复杂插画 | 单独裁出的图片图层 | 移动、缩放、替换；插画内部细节仍是位图 |
+
+也支持从文字开始：校准必要信息与绘图提示词，使用 Codex 内置 imagegen 生成易分层的参考图。你决定何时转换、是否高清化，以及是否将导出图再次交给 imagegen 迭代。**ChatGPT 图片是支持的输入来源，当前 Skill 与 MCP 的集成宿主是 Codex。**
 
 ## 工作流
 
@@ -68,6 +84,16 @@ codex mcp add figure-workbench -- node "$PWD/mcp/server.mjs"
 复制 skill 目录不会自动安装 Node 依赖。更新仓库后运行 `npm ci`、`npm run build`、`npm run install:codex`。请阅读并使用你信任的仓库副本。
 
 ## 在 Codex 中使用
+
+直接将现有图片拆层：
+
+```text
+$scilayer 将这张 ChatGPT / Codex ImageGen 生成的科研图拆成可编辑图层。
+文字、边框、箭头分别重建，复杂插画保留为独立图片图层。
+保留原图布局，在右侧打开，导出PPTX和JSON。若不清晰，先建议，不自动重绘。
+```
+
+从想法开始生图：
 
 ```text
 $scilayer 帮我画一张科研流程图，用于中文汇报PPT，横向16:9。
@@ -145,9 +171,9 @@ npm run doctor
 
 ## 许可与署名
 
-原始代码和 skill 使用 [PolyForm Noncommercial License 1.0.0](LICENSE.md)：**允许符合许可定义的非商业用途、修改与分发；商业使用需另行获得作者许可。分发时须保留许可和 NOTICE 中的 Required Notice 署名。**
+原始代码和 skill 使用 [Apache License 2.0](LICENSE.md)：**允许商业和非商业使用、修改与分发**，并包含协议规定的专利授权。分发时须遵守协议，包括附带许可证、保留适用的版权及署名信息和 [NOTICE](NOTICE)，并在修改过的文件中显著说明修改。完整条件以许可证为准。
 
-建议项目介绍注明：`SciLayer by Suyang Yuan — https://github.com/Su0tar/SciLayer`。完整条件以 LICENSE.md 为准。它属于源码可见的非商业许可，不是 OSI 意义的开源许可。第三方组件保留各自许可，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)；本软件许可不自动改变用户图片或导出作品的权利归属。
+建议项目介绍注明：`SciLayer by Suyang Yuan — https://github.com/Su0tar/SciLayer`。第三方组件保留各自许可，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)；本软件许可不自动改变用户图片或导出作品的权利归属。
 
 作者：**Suyang Yuan（袁溯阳）** · [GitHub / Su0tar](https://github.com/Su0tar)。
 

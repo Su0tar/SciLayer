@@ -1,6 +1,6 @@
 interface:
   display_name: "SciLayer"
-  short_description: "科研示意图提示词校准、图像生成与可编辑图层重建，在 Codex 中完成"
-  default_prompt: "使用 $scilayer 帮我绘制科研示意图，先校准必要信息，再生成并在侧栏展示，由我决定何时可编辑化。"
+  short_description: "图片拆为可编辑图层 · Turn figure images into editable layers"
+  default_prompt: "使用 $scilayer 将这张科研图拆成可独立编辑的文字、框线、箭头和插画图层，保留原布局并在侧栏打开。Turn this figure into editable layers."
 policy:
   allow_implicit_invocation: true

@@ -1,6 +1,6 @@
 # Third-party components
 
-SciLayer's original code and skill use PolyForm Noncommercial 1.0.0. This does not relicense dependencies, user reference images, fonts, generated images or exported figures. Follow each applicable license and service terms.
+SciLayer's original code and skill use the Apache License, Version 2.0. This does not relicense dependencies, user reference images, fonts, generated images or exported figures. Follow each applicable license and service terms.
 
 Dependencies are installed through npm and not vendored in this source release. License and copyright texts are included in their npm packages. See `package-lock.json` for the resolved dependency graph.
 

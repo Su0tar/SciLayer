@@ -1,11 +1,13 @@
 ---
 name: scilayer
-description: 科研流程图、框图和结构图的提示词校准、imagegen 绘制与参考图可编辑化；在 Codex 侧栏编辑文字、形状、箭头和插画图层，导出 PPTX/SVG/PNG/PSD。适用于科研示意图，不用于统计图拟合或照片修图。
+description: 将 ChatGPT / Codex ImageGen 生成的科研图或其他参考图拆为可独立编辑的文字、形状、箭头和插画图层，也支持提示词校准与生图。Turn scientific figure images into editable layers in Codex; also calibrate prompts and generate figures. 不用于统计拟合或照片修图。
 ---
 
 # SciLayer
 
-把科研意图转为便于分层的图，再由用户决定何时转为可编辑对象。SciLayer 包含这个 skill，以及名为 `figure-workbench` 的本地 MCP 编辑引擎。
+把 ChatGPT / Codex ImageGen 生成的科研图，或用户提供的其他参考图，拆成一个个可独立编辑的图层元素：文字、框线、箭头和简单图标重建为原生对象，复杂插画裁为独立图片图层。也可从绘图需求开始，校准提示词并生成便于分层的图。SciLayer 包含这个 skill，以及名为 `figure-workbench` 的本地 MCP 编辑引擎。
+
+Turn scientific figures from ChatGPT / Codex ImageGen, or other supplied images, into individually editable layers in Codex. Rebuild text, frames, arrows and simple icons as native objects; keep complex illustrations as separate raster layers. Prompt calibration and image generation are available when starting from an idea. ChatGPT-generated images are supported inputs; this skill runs in Codex.
 
 ## 按当前请求选择入口
 
