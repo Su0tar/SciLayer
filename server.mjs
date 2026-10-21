@@ -10,8 +10,9 @@ import { applyOperations } from "./src/operations.js";
 import { exportBytes, mimeTypes } from "./server-export.mjs";
 import {vectorizeIcons} from './server-icons.mjs';
 import {assessImageQuality} from './server-quality.mjs';
+import {listExamples,readExample} from './server-demos.mjs';
 const root = path.dirname(fileURLToPath(import.meta.url));
-const data = process.env.FIGURE_DATA_DIR || path.join(root, "data");
+const data = (process.env.SCILAYER_DATA_DIR || process.env.FIGURE_DATA_DIR) || path.join(root, "data");
 await mkdir(data, { recursive: true });
 const token = randomBytes(32).toString("hex");
 await writeFile(path.join(data, "bridge-token"), token, { mode: 0o600 });
@@ -68,13 +69,13 @@ app.use(express.json({ limit: "30mb" }));
 app.get("/api/status", (req, res) =>
   res.json({
     ok: true,
-    application: "figure-workbench",
-    version: "0.5.0",
+    application: "scilayer",
+    version: "0.6.0",
     token,
     revision,
-    configured: !!process.env.FIGURE_API_KEY,
-    model: process.env.FIGURE_MODEL || "",
-    baseURL: process.env.FIGURE_API_BASE || "",
+    configured: !!(process.env.SCILAYER_API_KEY || process.env.FIGURE_API_KEY),
+    model: (process.env.SCILAYER_MODEL || process.env.FIGURE_MODEL) || "",
+    baseURL: (process.env.SCILAYER_API_BASE || process.env.FIGURE_API_BASE) || "",
   }),
 );
 app.use("/api", (req, res, next) => {
@@ -83,6 +84,10 @@ app.use("/api", (req, res, next) => {
   next();
 });
 app.get("/api/scene", (req, res) => res.json({ scene, revision }));
+app.get('/api/examples',(req,res)=>res.json({examples:listExamples()}));
+app.get('/api/examples/:id',async(req,res,next)=>{
+  try{res.json(await readExample(req.params.id));}catch(e){next(e);}
+});
 app.get('/api/image-quality',async(req,res,next)=>{try{
   if(!reference?.src)throw Error('请先上传参考图');
   res.json(await assessImageQuality(Buffer.from(reference.src.split(',')[1],'base64')));
@@ -261,12 +266,12 @@ app.post("/api/ai", async (req, res, next) => {
     } = req.body;
     if (typeof prompt !== "string" || prompt.length > 20000)
       throw Error("请输入有效指令（最多20000字）");
-    const key = config.key || process.env.FIGURE_API_KEY;
-    const base = (config.baseURL || process.env.FIGURE_API_BASE || "").replace(
+    const key = config.key || (process.env.SCILAYER_API_KEY || process.env.FIGURE_API_KEY);
+    const base = (config.baseURL || (process.env.SCILAYER_API_BASE || process.env.FIGURE_API_BASE) || "").replace(
       /\/$/,
       "",
     );
-    const model = config.model || process.env.FIGURE_MODEL;
+    const model = config.model || (process.env.SCILAYER_MODEL || process.env.FIGURE_MODEL);
     if (!key || !base || !model)
       return res.status(428).json({
         error:

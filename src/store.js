@@ -59,8 +59,8 @@ export class WorkbenchStore {
       const json = JSON.stringify(this.state.scene);
       // Large embedded atlases are already persisted by the local service.
       // Avoid repeatedly exhausting the browser's much smaller localStorage quota.
-      if (json.length > 4_000_000) { this.storage?.removeItem('figure-workbench-scene'); return; }
-      this.storage?.setItem('figure-workbench-scene', json);
+      if (json.length > 4_000_000) { this.storage?.removeItem('scilayer-scene'); return; }
+      this.storage?.setItem('scilayer-scene', json);
     } catch {
       this.emit({
         notice: "浏览器存储空间不足，请导出项目；本机服务仍会保存画布。",
@@ -101,6 +101,7 @@ export class WorkbenchStore {
     clearInterval(this.retry);
   }
   edit(scene, { coalesce } = {}) {
+    if(this.replacing)throw Error('正在载入示例，请稍候');
     const next = validateScene(scene);
     if (equal(next, this.state.scene)) return;
     if (
@@ -245,6 +246,33 @@ export class WorkbenchStore {
         this.schedule();
     }
   }
+  async loadExample(scene, source, expectedRevision) {
+    const candidate=validateScene(scene);
+    await this.flush();
+    if(this.state.dirty||this.saving||this.gesture||this.state.conflict||!this.state.connected)
+      throw Error('请先完成当前画布的保存或冲突处理');
+    if(JSON.stringify(this.state.scene)!==source||this.state.revision!==expectedRevision)
+      throw Error('预览期间画布已变化，请重新预览示例后载入');
+    this.replacing=true;
+    this.replacementEpoch=(this.replacementEpoch||0)+1;
+    this.saving=true;
+    this.emit({saving:true});
+    try {
+      // Full replacement uses the reviewed revision and never merges unrelated scenes.
+      // The service saves the previous scene in history before acknowledging this write.
+      const result=await this.transport.put(candidate,expectedRevision,this.actor);
+      this.remember(this.state.scene);
+      this.base=candidate;
+      this.counter++;
+      this.emit({scene:candidate,revision:result.revision,selected:[],dirty:false,error:'',notice:'示例已载入；可撤销或从历史恢复原画布。'});
+      this.persist();
+      this.select([]);
+    } finally {
+      this.replacing=false;
+      this.saving=false;
+      this.emit({saving:false});
+    }
+  }
   async reconcile() {
     const remote = await this.transport.get();
     const result = mergeScenes(
@@ -278,8 +306,10 @@ export class WorkbenchStore {
     const selectionWasPending = this.selectionPending;
     const referenceEpoch = this.referenceEpoch;
     const workflowEpoch = this.workflowEpoch, workflowWasPending = this.workflowPending;
+    const replacementEpoch=this.replacementEpoch||0;
     try {
       const d = await this.transport.get();
+      if(this.replacing||replacementEpoch!==(this.replacementEpoch||0))return;
       const workflowPatch = d.workflow && !workflowWasPending && !this.workflowPending && workflowEpoch === this.workflowEpoch
         ? { workflow: normalizeWorkflow(d.workflow) } : {};
       const referencePatch =
@@ -343,7 +373,7 @@ export class WorkbenchStore {
     if (!c) return;
     try {
       this.storage?.setItem(
-        "figure-workbench-conflict-backup",
+        "scilayer-conflict-backup",
         JSON.stringify(c.local),
       );
     } catch {}

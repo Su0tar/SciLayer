@@ -1,11 +1,11 @@
 let appPromise;
-export const isMcpApp = () => !!window.FIGURE_MCP_APP;
+export const isMcpApp = () => !!window.SCILAYER_MCP_APP;
 async function bridge() {
   if (!appPromise)
     appPromise = (async () => {
       const { App } = await import("@modelcontextprotocol/ext-apps");
       const app = new App(
-        { name: "SciLayer", version: "0.5.0" },
+        { name: "SciLayer", version: "0.6.0" },
         {},
         { autoResize: false },
       );
@@ -68,6 +68,12 @@ export function createTransport() {
     },
     async get() {
       return isMcpApp() ? mcpCall("get_editor_state") : request("/api/state");
+    },
+    async examples(){
+      return isMcpApp()?mcpCall('list_examples'):request('/api/examples');
+    },
+    async example(id){
+      return isMcpApp()?mcpCall('read_example',{id}):request('/api/examples/'+encodeURIComponent(id));
     },
     async put(scene, revision, actor) {
       if (isMcpApp())

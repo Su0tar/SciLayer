@@ -4,14 +4,14 @@
 
 ## 从 Codex 操作画布
 
-1. 可编辑化前先读取 `get_workflow_plan`，遵守用户保存的处理偏好。生图独立、不设置次数上限；仅当用户明确要求或点击开始按钮时才启动可编辑化。用户可在导出后要求 imagegen 重绘，之后等待用户决定是否再次转换。优先使用 `figure-workbench` MCP 的 `get_canvas`、`get_reference_image`、`get_reconstruction_schema`，读取真实画布、参考图和格式规范。
+1. 可编辑化前先读取 `get_workflow_plan`，遵守用户保存的处理偏好。生图独立、不设置次数上限；仅当用户明确要求或点击开始按钮时才启动可编辑化。用户可在导出后要求 imagegen 重绘，之后等待用户决定是否再次转换。优先使用 `scilayer` MCP 的 `get_canvas`、`get_reference_image`、`get_reconstruction_schema`，读取真实画布、参考图和格式规范。
 2. 理解参考图的语义结构。文字、矩形、椭圆、菱形、连线重建为原生对象。复杂插画、照片、纹理使用 image 裁剪，src 为 `REFERENCE`，crop 为原图归一化区域。不要逐像素/色块描摹。
 3. 用 `replace_canvas` 提交完整重建；用 `update_objects` 做局部修改。传入读取时的 revision；遇到冲突重新读取，不覆盖用户刚进行的编辑。
 4. 核对中文，特别是“资产授权与资金承诺”。不确定的标注使用 `[待核对]`，不得编造科学关系。
 5. 用 `check_layout` 检查文字溢出、越界和箭头压字；必要时移动连线或文字。检查通过只代表几何检查通过。
 6. 用 `get_canvas_preview` 读取真实渲染预览，用 `export_figure` 导出 PPTX、SVG、PSD、PNG 或 JSON。导出来自同一 v2 场景，不要另外生成一份与画布脱节的图。
 7. 统一格式见 SCENE_FORMAT.md。连线使用归一化 points 或 from/to，线型为 solid/dash/dot/dashDot；layerGroup 是图层分区，groupId 才是移动组合。
-8. 支持 path 贝塞尔对象及常用/画面色板。不要把模型清晰重绘或本地超分描述成未知科学细节的准确恢复。发布代码不包含用户参考图、内置案例或工作数据。
+8. 支持 path 贝塞尔对象及常用/画面色板。不要把模型清晰重绘或本地超分描述成未知科学细节的准确恢复。发布仅包含 demo/ 下医学和规划两个获用户明确要求的示例；其他用户参考图和工作数据不进入仓库。
 
 清晰度先用 assess_image_quality 初检并结合视觉核验，再建议是否增强。默认偏好或开始可编辑化不等于高清化授权。完整流程见 skills/scilayer/SKILL.md。
 

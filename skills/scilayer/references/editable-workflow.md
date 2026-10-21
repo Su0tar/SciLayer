@@ -20,6 +20,6 @@
 
 ## 连接与本地服务
 
-推荐通过仓库 `npm run install:codex` 安装 skill 并注册 figure-workbench stdio MCP；MCP 自动启动本机服务。open_editor 返回 canvas_url，支持 MCP Apps 的宿主可渲染资源，Codex 也可以用 open_in_codex 打开右侧 browser。网页普通模式的“交给 Codex”会复制指令，需要粘回对话；不能宣称普通浏览器能自动操控 Codex。
+推荐通过仓库 `npm run install:codex` 安装 skill 并注册 scilayer stdio MCP；MCP 自动启动本机服务。open_editor 返回 canvas_url，支持 MCP Apps 的宿主可渲染资源，Codex 也可以用 open_in_codex 打开右侧 browser。网页普通模式的“交给 Codex”会复制指令，需要粘回对话；不能宣称普通浏览器能自动操控 Codex。
 
 若 MCP 未加载，先告知连接状态，可从用户实际克隆目录运行 `npm run doctor` 检查。不要猜固定磁盘路径，不修改无关配置，不绕过付费服务。完整安装与手动启动见仓库 README。

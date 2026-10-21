@@ -17,10 +17,23 @@ if(!args.includes('--skill-only')) {
   await access(path.join(root,'dist-mcp/editor.html'));
   // Paths are passed as environment values, never interpolated into shell code.
   const command=process.platform==='win32'?'powershell.exe':'codex';
-  const registration=['mcp','add','figure-workbench','--',process.execPath,path.join(root,'mcp/server.mjs')];
-  const commandArgs=process.platform==='win32'?['-NoProfile','-Command','& codex.cmd mcp add figure-workbench -- $env:SCILAYER_INSTALL_NODE $env:SCILAYER_INSTALL_MCP; exit $LASTEXITCODE']:registration;
-  const result=spawnSync(command,commandArgs,{stdio:'inherit',windowsHide:true,env:{...process.env,SCILAYER_INSTALL_NODE:process.execPath,SCILAYER_INSTALL_MCP:path.join(root,'mcp/server.mjs')}});
+  function codex(argv,stdio='inherit'){
+    const commandArgs=process.platform==='win32'?['-NoProfile','-Command','$codexArguments = @(ConvertFrom-Json $env:SCILAYER_INSTALL_ARGS); & codex.cmd @codexArguments; exit $LASTEXITCODE']:argv;
+    return spawnSync(command,commandArgs,{stdio,encoding:'utf8',windowsHide:true,env:{...process.env,SCILAYER_INSTALL_ARGS:JSON.stringify(argv)}});
+  }
+  const result=codex(['mcp','add','scilayer','--',process.execPath,path.join(root,'mcp/server.mjs')]);
   if(result.error||result.status!==0)throw Error('MCP注册失败。确保Codex CLI已安装，或使用README的手动注册命令。');
+  // Remove only the legacy registration that points to this checkout.
+  const legacy=codex(['mcp','get','figure-workbench','--json'],'pipe');
+  if(legacy.status===0){
+    const old=JSON.parse(legacy.stdout);
+    const pointsHere=old.transport?.args?.some(arg=>path.resolve(arg)===path.resolve(root,'mcp/server.mjs'));
+    if(pointsHere){
+      const removed=codex(['mcp','remove','figure-workbench']);
+      if(removed.error||removed.status!==0)throw Error('SciLayer已注册，但旧MCP注册迁移失败。请重试安装。');
+      console.log('Migrated legacy MCP registration to scilayer.');
+    }else console.log('An unrelated legacy registration was left untouched.');
+  }
 }
 await mkdir(parent,{recursive:true});
 await cp(path.join(root,'skills/scilayer'),destination,{recursive:true});

@@ -5,7 +5,7 @@ description: 将 ChatGPT / Codex ImageGen 生成的科研图或其他参考图�
 
 # SciLayer
 
-把 ChatGPT / Codex ImageGen 生成的科研图，或用户提供的其他参考图，拆成一个个可独立编辑的图层元素：文字、框线、箭头和简单图标重建为原生对象，复杂插画裁为独立图片图层。也可从绘图需求开始，校准提示词并生成便于分层的图。SciLayer 包含这个 skill，以及名为 `figure-workbench` 的本地 MCP 编辑引擎。
+把 ChatGPT / Codex ImageGen 生成的科研图，或用户提供的其他参考图，拆成一个个可独立编辑的图层元素：文字、框线、箭头和简单图标重建为原生对象，复杂插画裁为独立图片图层。也可从绘图需求开始，校准提示词并生成便于分层的图。SciLayer 包含这个 skill，以及名为 `scilayer` 的本地 MCP 编辑引擎。
 
 Turn scientific figures from ChatGPT / Codex ImageGen, or other supplied images, into individually editable layers in Codex. Rebuild text, frames, arrows and simple icons as native objects; keep complex illustrations as separate raster layers. Prompt calibration and image generation are available when starting from an idea. ChatGPT-generated images are supported inputs; this skill runs in Codex.
 
@@ -32,7 +32,7 @@ Turn scientific figures from ChatGPT / Codex ImageGen, or other supplied images,
 
 查看结果，校对文字、关系、四类部件与通道。将选中的项目用图复制到用户工作目录，保留原图与版本，记录真实文件路径。
 
-使用 `figure-workbench.open_editor` 获取 `canvas_url`。若宿主未自动显示 MCP App，用 Codex 的 `open_in_codex` 将返回地址以 browser 类型打开在右侧。工具不存在时正常显示图片并解释连接问题，不声称已打开侧栏。
+使用 `scilayer.open_editor` 获取 `canvas_url`。若宿主未自动显示 MCP App，用 Codex 的 `open_in_codex` 将返回地址以 browser 类型打开在右侧。工具不存在时正常显示图片并解释连接问题，不声称已打开侧栏。
 
 将最新图通过 `import_reference_image(path, reference:true, reference_only:true)` 设置为参考图，只更新参考预览，不改变当前对象或开始转换。用返回的 reference_preview_url 打开右侧 browser，或 open_editor(view:"reference") 获取预览地址；此视图明确标注“尚未可编辑化”，可返回原画布。用户要求新图替换旧图时，再基于当前 revision 写入。侧栏已有的工作不得被无关预览覆盖。
 

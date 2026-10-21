@@ -13,17 +13,24 @@ import { normalizeWorkflow } from '../src/workflow.js';
 import {packIconAtlas,vectorizeEnhancedAtlas} from '../server-icons.mjs';
 import { exportBytes, mimeTypes } from "../server-export.mjs";
 import { assessImageQuality } from '../server-quality.mjs';
+import {listExamples,readExample} from '../server-demos.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const data = process.env.FIGURE_DATA_DIR || path.join(root, "data");
-const base = process.env.FIGURE_WORKBENCH_URL || "http://127.0.0.1:4317";
+const data = (process.env.SCILAYER_DATA_DIR || process.env.FIGURE_DATA_DIR) || path.join(root, "data");
+const base = (process.env.SCILAYER_URL || process.env.FIGURE_WORKBENCH_URL) || "http://127.0.0.1:4317";
 let startup;
 async function ensure() {
+  let status;
   try {
     const r = await fetch(base + "/api/status", {
       signal: AbortSignal.timeout(1200),
     });
-    if (r.ok) return;
+    if (r.ok) status=await r.json();
   } catch {}
+  if(status){
+    if(status.application!=='scilayer'||status.version!=='0.6.0')
+      throw Error('本地端口仍在运行旧版或其他服务。请先停止旧服务，再运行 npm start 启动当前 SciLayer。画布文件会保留。');
+    return;
+  }
   if (!startup)
     startup = (async () => {
       const child = spawn(
@@ -45,7 +52,8 @@ async function ensure() {
       for (let i = 0; i < 40; i++) {
         await new Promise((r) => setTimeout(r, 200));
         try {
-          if ((await fetch(base + "/api/status")).ok) return;
+          const r=await fetch(base + "/api/status");
+          if(r.ok){const d=await r.json();if(d.application==='scilayer'&&d.version==='0.6.0')return;}
         } catch {}
       }
       throw Error("无法启动画布，请运行npm start");
@@ -122,8 +130,18 @@ const wrap = (fn) => async (args) => {
     return { isError: true, content: [{ type: "text", text: e.message }] };
   }
 };
-const server = new McpServer({ name: "figure-workbench", version: "0.5.0" });
-const ui = "ui://figure-workbench/editor.html";
+const server = new McpServer({ name: "scilayer", title:"SciLayer", version: "0.6.0" });
+const ui = "ui://scilayer/editor.html";
+server.registerTool('list_examples',{
+  title:'SciLayer · 内置示例',
+  description:'列出医学、规划两个可编辑示例，不修改当前画布。',
+  inputSchema:{},annotations:{readOnlyHint:true},
+},wrap(async()=>({examples:listExamples()})));
+server.registerTool('read_example',{
+  title:'SciLayer · 预览示例',
+  description:'读取一个内置示例的完整对象，用于预览；不会载入或替换当前画布。用户选择载入后再基于当前版本提交。',
+  inputSchema:{id:z.enum(['medical','planning'])},annotations:{readOnlyHint:true},
+},wrap(async({id})=>readExample(id)));
 server.registerTool('assess_image_quality', {
   description:'检测当前参考图或指定本机图的尺寸与边缘清晰度，返回需人工复核的原因。不会高清化、不会调用imagegen、不会修改画布。',
   inputSchema:{path:z.string().optional(),target_width:z.number().min(100).max(8000).default(2000)},
@@ -166,9 +184,10 @@ server.registerTool('set_workflow', {
   annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
 }, wrap(async args => putValue('/api/workflow', normalizeWorkflow(args))));
 server.registerResource(
-  "figure-editor",
+  "scilayer-editor",
   ui,
   {
+    title:"SciLayer",
     mimeType: "text/html;profile=mcp-app",
     description: "交互科研图编辑器：文字、路径、图层与导出",
   },
@@ -191,8 +210,9 @@ server.registerResource(
 server.registerTool(
   "open_editor",
   {
+    title:"SciLayer",
     description:
-      "打开当前科研图交互画布。支持MCP Apps的宿主显示右侧面板；其他宿主可打开返回的本机canvas_url。",
+      "打开 SciLayer 科研图交互画布。支持MCP Apps的宿主显示右侧面板；其他宿主可打开返回的本机canvas_url。",
     inputSchema: {view:z.enum(['canvas','reference']).default('canvas')},
     annotations: { readOnlyHint: true },
     _meta: {

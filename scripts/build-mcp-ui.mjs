@@ -13,7 +13,7 @@ await build({
     cssCodeSplit: false,
     lib: {
       entry: path.join(root, "src/main.jsx"),
-      name: "FigureWorkbench",
+      name: "SciLayer",
       formats: ["iife"],
       fileName: "editor",
     },
@@ -29,6 +29,6 @@ for (const file of files) {
   if (file.endsWith(".css"))
     css += await fs.readFile(path.join(root, "dist-mcp", file), "utf8");
 }
-const html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${css.replace(/<\/style/gi, "<\\/style")}</style></head><body><div id="root"></div><script>window.FIGURE_MCP_APP=true;</script><script>${js.replace(/<\/script/gi, "<\\/script")}</script></body></html>`;
+const html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>SciLayer</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>${css.replace(/<\/style/gi, "<\\/style")}</style></head><body><div id="root"></div><script>window.SCILAYER_MCP_APP=true;</script><script>${js.replace(/<\/script/gi, "<\\/script")}</script></body></html>`;
 await fs.writeFile(path.join(root, "dist-mcp/editor.html"), html);
 console.log("Self-contained MCP UI:", Buffer.byteLength(html), "bytes");

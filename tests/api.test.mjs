@@ -12,7 +12,7 @@ import { fixture as template } from "./fixture.mjs";
 import sharp from "sharp";
 test("真实HTTP：鉴权、并发保护、磁盘保存、视觉接口闭环及错误路径", async () => {
   const root = fileURLToPath(new URL("../", import.meta.url));
-  const dir = await mkdtemp(path.join(tmpdir(), "figure-workbench-test-"));
+  const dir = await mkdtemp(path.join(tmpdir(), "scilayer-test-"));
   const reservation = createServer();
   await new Promise(resolve=>reservation.listen(0,'127.0.0.1',resolve));
   const port=reservation.address().port;
@@ -41,10 +41,10 @@ test("真实HTTP：鉴权、并发保护、磁盘保存、视觉接口闭环及�
       env: {
         ...process.env,
         PORT: String(port),
-        FIGURE_DATA_DIR: dir,
-        FIGURE_API_KEY: "",
-        FIGURE_API_BASE: "",
-        FIGURE_MODEL: "",
+        SCILAYER_DATA_DIR: dir,
+        SCILAYER_API_KEY: "",
+        SCILAYER_API_BASE: "",
+        SCILAYER_MODEL: "",
       },
     });
   let child = launch();
@@ -61,6 +61,16 @@ test("真实HTTP：鉴权、并发保护、磁盘保存、视觉接口闭环及�
       await new Promise((r) => setTimeout(r, 100));
     }
     assert.ok(state?.token);
+    assert.equal(state.application,'scilayer');
+    const initialCanvas=await(await fetch(base+'/api/scene')).json();
+    const examples=await(await fetch(base+'/api/examples')).json();
+    assert.deepEqual(examples.examples.map(e=>e.id),['medical','planning']);
+    for(const item of examples.examples){
+      const demo=await(await fetch(base+'/api/examples/'+item.id)).json();
+      assert.equal(demo.scene.nodes.length,item.objects);
+    }
+    assert.equal((await fetch(base+'/api/examples/unknown')).status,400);
+    assert.deepEqual(await(await fetch(base+'/api/scene')).json(),initialCanvas);
     assert.deepEqual((await(await fetch(base+'/api/scene')).json()).scene.nodes,[]);
     assert.equal((await (await fetch(base + '/api/workflow')).json()).workflow.restorationMode, 'imagegen');
     const headers = {
@@ -187,7 +197,7 @@ test("真实HTTP：鉴权、并发保护、磁盘保存、视觉接口闭环及�
     const client=new Client({name:'scilayer-reference-test',version:'1'});
     const localImage=path.join(dir,'reference-preview.png');await writeFile(localImage,png);
     try{
-      await client.connect(new StdioClientTransport({command:process.execPath,args:[path.join(root,'mcp/server.mjs')],stderr:'pipe',env:{...process.env,FIGURE_DATA_DIR:dir,FIGURE_WORKBENCH_URL:base}}));
+      await client.connect(new StdioClientTransport({command:process.execPath,args:[path.join(root,'mcp/server.mjs')],stderr:'pipe',env:{...process.env,SCILAYER_DATA_DIR:dir,SCILAYER_URL:base}}));
       const before=await(await fetch(base+'/api/state')).json();
       const preview=await client.callTool({name:'import_reference_image',arguments:{path:localImage,reference_only:true}});
       assert.ok(!preview.isError);assert.equal(preview.structuredContent.canvas_unchanged,true);

@@ -10,7 +10,7 @@ SciLayer 是一个 **Codex Skill + 本地 MCP 图层编辑器**。把满意的�
 
 既可以使用 ChatGPT、Codex ImageGen 或其他工具生成的图片，也可以导入已有论文图、截图等参考图。**无需先重新生图**。这里的“拆层”是由 Codex 理解画面后重建独立对象，复杂插画裁为图片图层；并非恢复原图隐藏的 PSD 图层，也不是把所有细节自动变成矢量。
 
-> 0.5.0 · Codex 优先 · 本地服务 · Apache-2.0 · 允许商业使用
+> 0.6.0 · Codex 优先 · 本地服务 · Apache-2.0 · 允许商业使用
 
 ## 看看实际操作
 
@@ -22,7 +22,7 @@ SciLayer 是一个 **Codex Skill + 本地 MCP 图层编辑器**。把满意的�
 
 ![复杂科研示意图的独立文字对象、属性编辑和代表色色板](docs/screenshots/scientific-figure-layers.png)
 
-第二张为早期开发界面，仍显示旧名称 Figure Workbench 和已移除的内置示例入口；当前产品名称为 SciLayer。截图用于展示操作，不会作为内置示例加载到画布。
+第二张为早期开发界面，显示旧品牌名称与当时的示例入口。当前界面和 MCP 已统一为 SciLayer，仅提供下述两个内置示例。
 
 ## 从一张图片到可编辑图层
 
@@ -57,7 +57,16 @@ SciLayer 是一个 **Codex Skill + 本地 MCP 图层编辑器**。把满意的�
 - **原生对象编辑**：文字、形状、自由曲线、箭头、图层组合；实线/虚线；线宽、常用色和画面代表色；渐变色标与方向；圆角开关与半径。
 - **同步编辑**：MCP 与本地界面共用场景 JSON，版本检查与冲突合并避免覆盖同时发生的修改。
 - **图标矢量化**：文档、地球、放大镜等有限语义模板的匹配预览；可将多个图标拼版，用户选择 imagegen 清晰化后再切回识别。
-- **从空白开始**：不附带内置案例、论文图片或个人工作数据。
+- **两个内置示例**：医学图与规划图，均可先预览再载入。首次启动仍为空白画布，不会自动覆盖已有项目。
+
+## 两个内置示例
+
+点击顶部 **示例**，或展开创作助手中的 **内置示例**：
+
+- **医学 · 壳聚糖生物材料**：137 个对象，展示独立文字、框线、箭头及复杂插画图层。
+- **规划 · 规则与实施核查**：211 个对象，展示原生文字、连接线、形状与单色矢量图标。
+
+选择后先预览，确认载入才替换画布；原画布会保存在历史中，也可撤销。已有参考图保留，示例不需要生图或外部 API。示例源文件仅位于 `demo/`，不包含其他个人工作数据。
 
 ## 安装：推荐在 Codex 中使用
 
@@ -71,9 +80,9 @@ npm run build
 npm run install:codex
 ```
 
-安装程序将 `skills/scilayer` 复制到 `~/.agents/skills/scilayer`，并用 Codex CLI 注册 `figure-workbench` stdio MCP。保留此克隆目录，MCP 配置指向其中的 `mcp/server.mjs`；移动目录后重新运行安装。为兼容早期版本，MCP 标识仍是 `figure-workbench`，产品和 skill 名称是 SciLayer。
+安装程序将 `skills/scilayer` 复制到 `~/.agents/skills/scilayer`，并用 Codex CLI 注册 `scilayer` stdio MCP。保留此克隆目录，MCP 配置指向其中的 `mcp/server.mjs`；移动目录后重新运行安装。产品、Skill 和 MCP 现已统一为 SciLayer（MCP 注册名 `scilayer`）。安装程序会移除指向同一克隆目录的旧 MCP 注册；旧对话中的历史消息不会被改写，刷新 MCP 或重启 Codex 后新调用使用新名称。
 
-安装后刷新 MCP 或重启 Codex，再输入 `$scilayer`。当前会话的工具列表可能需要重载才能看到新增工具。可用 `codex mcp list` 检查注册，用 `npm run doctor` 检查本地依赖和构建。
+安装后刷新 MCP 或重启 Codex，再输入 `$scilayer`。当前会话的工具列表可能需要重载才能看到新增工具。可用 `codex mcp list` 检查注册，用 `npm run doctor` 检查本地依赖和构建。升级时若旧服务仍在运行，先停止它再运行 `npm start`；仅刷新网页无法更新已经运行的服务进程。`data/` 中已有画布会保留。
 
 旧版 Codex 若使用 `~/.codex/skills`，可指定技能安装位置：
 
@@ -90,7 +99,7 @@ node scripts/install.mjs --skill-only
 手动注册 MCP（在克隆目录执行）：
 
 ```powershell
-codex mcp add figure-workbench -- node "$PWD/mcp/server.mjs"
+codex mcp add scilayer -- node "$PWD/mcp/server.mjs"
 ```
 
 复制 skill 目录不会自动安装 Node 依赖。更新仓库后运行 `npm ci`、`npm run build`、`npm run install:codex`。请阅读并使用你信任的仓库副本。
@@ -156,6 +165,7 @@ npm start
 | 打开侧栏、读取状态 | `open_editor`, `get_canvas`, `get_reference_image` |
 | 提示与流程 | `get_generation_brief`, `get_workflow_plan`, `set_workflow` |
 | 参考图和清晰度 | `import_reference_image`, `assess_image_quality` |
+| 两个内置示例（只读预览） | `list_examples`, `read_example` |
 | 重建与修改 | `get_reconstruction_schema`, `replace_canvas`, `update_objects`, `add_objects`, `delete_objects` |
 | 图标 | `vectorize_icons`, `prepare_icon_atlas`, `vectorize_icon_atlas` |
 | 核验与交付 | `check_layout`, `get_canvas_preview`, `export_figure` |

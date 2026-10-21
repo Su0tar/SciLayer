@@ -1,8 +1,7 @@
 $ErrorActionPreference = 'Stop'
 $projectDirectory = $PSScriptRoot
-$serverScript = Join-Path $projectDirectory 'mcp/server.mjs'
 $nodeExecutable = (Get-Command node.exe).Source
 if (-not (Test-Path -LiteralPath (Join-Path $projectDirectory 'node_modules/@modelcontextprotocol/sdk'))) { throw 'Run npm install in the project directory first.' }
-& codex mcp add figure-workbench -- $nodeExecutable $serverScript
+& $nodeExecutable (Join-Path $projectDirectory 'scripts/install.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Failed to register MCP server' }
-Write-Host 'Registered figure-workbench. Reload MCP connections or restart Codex to use it.'
+Write-Host 'Registered SciLayer. Reload MCP connections or restart Codex to use it.'

@@ -24,6 +24,11 @@
 !/server-export.mjs
 !/server-icons.mjs
 !/server-quality.mjs
+!/server-demos.mjs
+!/demo/
+/demo/*
+!/demo/medical.figure.json
+!/demo/planning.figure.json
 !/install-codex-mcp.ps1
 !/start-workbench.cmd
 !/src/

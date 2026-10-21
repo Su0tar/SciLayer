@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-const base = process.env.FIGURE_WORKBENCH_URL || "http://127.0.0.1:4317";
+const base = (process.env.SCILAYER_URL || process.env.FIGURE_WORKBENCH_URL) || "http://127.0.0.1:4317";
 const [command, file] = process.argv.slice(2);
 const token = (
   await readFile(new URL("../data/bridge-token", import.meta.url), "utf8")

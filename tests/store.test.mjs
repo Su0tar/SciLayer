@@ -69,6 +69,42 @@ function backend() {
     current: () => ({ scene, revision }),
   };
 }
+test('示例载入可撤销；预览后的本机或远端修改均不能被示例覆盖',async()=>{
+  const api=backend(),store=new WorkbenchStore(api);
+  try{
+    await store.start();
+    const old=clone(store.state.scene),example={...clone(old),name:'示例副本'};
+    const source=JSON.stringify(old);
+    await store.loadExample(example,source,store.state.revision);
+    assert.equal(api.current().scene.name,'示例副本');
+    store.undo();await store.flush();
+    assert.deepEqual(api.current().scene,old);
+    const previewRevision=store.state.revision;
+    const modified=clone(old);modified.nodes[0].x+=10;store.edit(modified);
+    await assert.rejects(()=>store.loadExample(example,source,previewRevision),/预览期间/);
+    await store.flush();
+    const remoteSource=JSON.stringify(store.state.scene),remoteRevision=store.state.revision;
+    api.remote(s=>({...s,name:'远端新修改'}));
+    await assert.rejects(()=>store.loadExample(example,remoteSource,remoteRevision),/版本冲突/);
+    assert.equal(api.current().scene.name,'远端新修改');
+    assert.notEqual(store.state.scene.name,'示例副本');
+  }finally{store.stop();}
+});
+test('示例写入前发起的延迟读取不会把新示例倒退成旧画布',async()=>{
+  const api=backend(),store=new WorkbenchStore(api);
+  try{
+    await store.start();
+    const source=JSON.stringify(store.state.scene),revision=store.state.revision;
+    const read=api.get;let release;
+    api.get=async()=>{const old=await read();await new Promise(r=>release=r);return old;};
+    const refresh=store.refresh();
+    await new Promise(r=>setTimeout(r,0));
+    await store.loadExample({...clone(store.state.scene),name:'已载入示例'},source,revision);
+    release();await refresh;
+    assert.equal(store.state.scene.name,'已载入示例');
+    assert.equal(store.state.revision,api.current().revision);
+  }finally{store.stop();}
+});
 test('新载入的对象先保存再同步选区，不因服务端尚无该ID而取消选择', async()=>{
   const api=backend(),put=api.put;let release,remoteSelected=[];
   api.put=async(...args)=>{await new Promise(r=>release=r);return put(...args);};

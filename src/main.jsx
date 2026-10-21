@@ -107,6 +107,7 @@ function App() {
     [busy, setBusy] = useState(false),
     [pending, setPending] = useState(null),
     [history, setHistory] = useState([]),
+    [examples,setExamples] = useState([]),
     [config, setConfig] = useState({ baseURL: "", model: "", key: "" }),
     [cropSource, setCropSource] = useState(null),
     [crop, setCrop] = useState(null),
@@ -521,6 +522,24 @@ function App() {
       notify("载入失败：" + e.message);
     }
   }
+  async function showExamples(){
+    try{
+      const d=await transport.examples();setExamples(d.examples);setModal('examples');
+    }catch(e){notify('无法读取示例：'+e.message);}
+  }
+  async function previewExample(id){
+    if(busy)return;
+    setBusy(true);
+    try{
+      await store.flush();
+      if(store.state.dirty||store.state.saving)throw Error('请等待当前画布保存完成');
+      const source=JSON.stringify(store.state.scene),revision=store.state.revision;
+      const example=await transport.example(id);
+      setModal(null);
+      setPending({scene:validateScene(example.scene),source,revision,example:true,title:example.name,
+        note:example.description+' 载入将替换画布对象；原画布保存在历史中，也可撤销。你已上传的参考图会保留。'});
+    }catch(e){notify(e.message);}finally{setBusy(false);}
+  }
   async function doExport(format, nativeText = true) {
     setExportOpen(false);
     if (exporting) return;
@@ -545,7 +564,7 @@ function App() {
   async function sendToCodex(text, pipeline = false) {
     const request =
       text +
-      "\n请使用figure-workbench MCP读取当前画布和选区。保持对象ID，基于当前revision更新。若需拆图，读取get_reference_image和get_reconstruction_schema；完成后核对预览。" +
+      "\n请使用scilayer MCP读取当前画布和选区。保持对象ID，基于当前revision更新。若需拆图，读取get_reference_image和get_reconstruction_schema；完成后核对预览。" +
       (pipeline ? '\n先读取 get_workflow_plan，执行已保存的用户选择。\n' + workflowPlan(store.state.workflow).instruction : '');
     try {
       if (isMcpApp()) {
@@ -806,6 +825,9 @@ function App() {
           onClick={group}
         />
         <div className="toolbar-end">
+          <button onClick={showExamples} disabled={busy||!state.loaded}>
+            <Workflow size={15} />示例
+          </button>
           <label>
             <input
               type="checkbox"
@@ -855,6 +877,9 @@ function App() {
               <p className="assistant-intro">
                 当前画布与Codex共用同一份对象数据。基础修改可直接执行；复杂要求交给旁边的对话。
               </p>
+              <button className="example-button" onClick={showExamples} disabled={busy||!state.loaded}>
+                <Workflow size={17}/><span><b>内置示例</b><small>医学插画分层 · 规划矢量框图</small></span>
+              </button>
               <div className="assistant-section">
                 参考图 <small>PNG / JPEG / WebP</small>
               </div>
@@ -1085,6 +1110,8 @@ function App() {
                     ? "连接视觉模型"
                     : modal === "history"
                       ? "历史版本"
+                      : modal === "examples"
+                        ? "SciLayer · 内置示例"
                       : "裁剪原始图片"}
               </b>
               <button aria-label="关闭对话框" onClick={() => setModal(null)}>
@@ -1098,7 +1125,7 @@ function App() {
                 </p>
                 <blockquote>
                   使用
-                  figure-workbench，读取我的选区，把选中箭头改成蓝色虚线，然后更新画布。
+                  scilayer，读取我的选区，把选中箭头改成蓝色虚线，然后更新画布。
                 </blockquote>
                 <p>修改会同步到此处，并可导出PPTX、SVG或PSD。</p>
                 <div className="callout">
@@ -1119,7 +1146,7 @@ function App() {
                   className="primary-button"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      "请使用 $scilayer 和 figure-workbench MCP 读取当前画布和选区，按我的要求修改。若MCP尚未加载，请在实际克隆目录运行 npm run doctor 检查连接。",
+                      "请使用 $scilayer 和 scilayer MCP 读取当前画布和选区，按我的要求修改。若MCP尚未加载，请在实际克隆目录运行 npm run doctor 检查连接。",
                     );
                     notify("已复制");
                   }}
@@ -1127,6 +1154,15 @@ function App() {
                   <Copy size={14} />
                   复制使用指令
                 </button>
+              </>
+            ) : modal === "examples" ? (
+              <>
+                <p>选择一个示例先预览。确认载入后，才能替换当前画布。</p>
+                <div className="demo-list">
+                  {examples.map(example=><button key={example.id} disabled={busy} onClick={()=>previewExample(example.id)}>
+                    <Workflow size={22}/><span><b>{example.name}</b><small>{example.description}</small><small>{example.objects} 个可编辑对象 · 预览后载入</small></span><ArrowUpRight size={18}/>
+                  </button>)}
+                </div>
               </>
             ) : modal === "settings" ? (
               <>
@@ -1272,10 +1308,10 @@ function App() {
       )}
       {pending && (
         <div className="modal-backdrop">
-          <div className="modal wide">
+          <div className="modal wide" role="dialog" aria-modal="true" aria-label={pending.title||'重建结果预览'}>
             <header className="modal-header">
               <b>{pending.title||'视觉模型重建结果'} · {pending.scene.nodes.length} 个对象</b>
-              <button onClick={() => setPending(null)}>
+              <button aria-label="关闭预览" disabled={busy} onClick={() => setPending(null)}>
                 <X size={18} />
               </button>
             </header>
@@ -1283,24 +1319,34 @@ function App() {
             {pending.note&&<p className="property-help">{pending.note}</p>}
             <img
               className="ai-result-preview"
-              alt="重建结果预览"
+              alt={pending.example?'示例预览':'重建结果预览'}
               src={
                 "data:image/svg+xml;charset=utf-8," +
                 encodeURIComponent(sceneSvg(pending.scene))
               }
             />
             <div className="modal-actions">
-              <button onClick={() => setPending(null)}>放弃</button>
+              <button disabled={busy} onClick={() => setPending(null)}>放弃</button>
               <button
                 className="primary-button"
-                onClick={() => {
+                disabled={busy}
+                onClick={async () => {
+                  if(pending.example){
+                    setBusy(true);
+                    try{
+                      await store.loadExample(pending.scene,pending.source,pending.revision);
+                      setReferenceView(false);setShowReference(false);setChecks(null);setPending(null);
+                      notify('示例已载入，可编辑、撤销或导出');
+                    }catch(e){notify(e.message);}finally{setBusy(false);}
+                    return;
+                  }
                   if (JSON.stringify(store.state.scene) !== pending.source)
                     return notify("生成期间画布已变化，请重新生成以避免覆盖。");
                   commit(pending.scene);
                   setPending(null);
                 }}
               >
-                应用重建结果
+                {busy?'正在载入…':pending.example?'载入示例（保留原版本）':'应用重建结果'}
               </button>
             </div>
           </div>

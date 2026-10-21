@@ -8,7 +8,7 @@ SciLayer combines a **Codex skill, a local MCP engine, and a layer editor**. Giv
 
 Use an image generated in ChatGPT, Codex ImageGen or another tool, or supply an existing scientific figure or screenshot. **Generating the image again is optional.** Layer conversion means that Codex interprets the image and reconstructs independent objects, while complex illustrations become separate image crops. It does not recover hidden source layers or turn every detail into a vector.
 
-> 0.5.0 · Codex first · Local service · Apache-2.0 · Commercial use allowed
+> 0.6.0 · Codex first · Local service · Apache-2.0 · Commercial use allowed
 
 ## See it in use
 
@@ -20,7 +20,7 @@ Use an image generated in ChatGPT, Codex ImageGen or another tool, or supply an 
 
 ![A complex scientific figure with an independent text object, text properties and a representative color palette](docs/screenshots/scientific-figure-layers.png)
 
-The second screenshot shows an earlier development UI with the former Figure Workbench name and demo shortcuts that have since been removed. The current product is SciLayer. These are documentation screenshots; they are not bundled canvas examples.
+The second screenshot shows an earlier development UI with the former branding and its demo shortcuts. The current UI and MCP are named SciLayer, with only the two built-in examples described below.
 
 ## From one image to editable layers
 
@@ -60,7 +60,16 @@ Starting from an idea? Calibrate the prompt and generate a reference first.
 - **Object editing:** text, shapes, freeform paths, arrows and groups; line styles and widths; common and representative colors; gradient stops and direction; optional rounded corners and radius.
 - **Shared state:** the UI and MCP use the same scene JSON, revision checks and conflict merging.
 - **Icon workflow:** preview matches for a limited set of semantic templates. Optionally assemble unclear icons into an atlas, enhance it with imagegen when requested, then map the icons back.
-- **Blank by default:** no bundled demo cases, paper figures or personal working data.
+- **Two built-in examples:** preview a medical figure or planning diagram before loading it. First launch remains blank and existing projects are never automatically replaced.
+
+## Two built-in examples
+
+Click **示例** (Examples) in the toolbar, or **内置示例** in the creation assistant:
+
+- **Medical · Chitosan biomaterials:** 137 objects, with separate text, frames, arrows and complex illustration layers.
+- **Planning · Rules and implementation review:** 211 objects, with native text, connectors, shapes and monochrome vector icons.
+
+Selection opens a preview. Only confirming Load replaces the canvas; the previous scene stays in history and can also be restored with Undo. Existing reference images are retained. No generation or external API is required. Only these two examples are bundled in `demo/`; other personal working data is excluded.
 
 ## Install: recommended for Codex
 
@@ -74,9 +83,9 @@ npm run build
 npm run install:codex
 ```
 
-The installer copies `skills/scilayer` to `~/.agents/skills/scilayer` and registers the `figure-workbench` stdio MCP server through Codex CLI. Keep the clone in place: the MCP configuration points to `mcp/server.mjs` inside it. Run the installer again if you move the directory. The MCP identifier remains `figure-workbench` for compatibility; the product and skill are named SciLayer.
+The installer copies `skills/scilayer` to `~/.agents/skills/scilayer` and registers the `scilayer` stdio MCP server through Codex CLI. Keep the clone in place: the MCP configuration points to `mcp/server.mjs` inside it. Run the installer again if you move the directory. The product, skill and MCP now share the SciLayer name (MCP registration: `scilayer`). The installer removes a legacy MCP registration only when it points to the same checkout. Historical chat messages stay unchanged; reload MCP or restart Codex to use the new name for future calls.
 
-Reload MCP or restart Codex, then invoke `$scilayer`. The current session may need to reload its tool list. Check registration with `codex mcp list` and local dependencies/builds with `npm run doctor`.
+Reload MCP or restart Codex, then invoke `$scilayer`. The current session may need to reload its tool list. Check registration with `codex mcp list` and local dependencies/builds with `npm run doctor`. When upgrading a running service, stop the old process and run `npm start`; refreshing the webpage alone does not update the running server. Existing canvases in `data/` are retained.
 
 For an older Codex installation that uses `~/.codex/skills`:
 
@@ -93,7 +102,7 @@ node scripts/install.mjs --skill-only
 Manual MCP registration from the clone directory:
 
 ```powershell
-codex mcp add figure-workbench -- node "$PWD/mcp/server.mjs"
+codex mcp add scilayer -- node "$PWD/mcp/server.mjs"
 ```
 
 Copying the skill does not install Node dependencies. After updating the repository, run `npm ci`, `npm run build` and `npm run install:codex`. Inspect and use a repository copy you trust.
@@ -155,6 +164,7 @@ The server binds only to `127.0.0.1`. State/history stay in local `data/`; expor
 | Open the editor and read state | `open_editor`, `get_canvas`, `get_reference_image` |
 | Prompt and workflow | `get_generation_brief`, `get_workflow_plan`, `set_workflow` |
 | Reference images and clarity | `import_reference_image`, `assess_image_quality` |
+| Two built-in examples (read-only previews) | `list_examples`, `read_example` |
 | Reconstruction and editing | `get_reconstruction_schema`, `replace_canvas`, `update_objects`, `add_objects`, `delete_objects` |
 | Icons | `vectorize_icons`, `prepare_icon_atlas`, `vectorize_icon_atlas` |
 | Review and delivery | `check_layout`, `get_canvas_preview`, `export_figure` |
